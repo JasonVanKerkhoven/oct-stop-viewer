@@ -1,2 +1,2 @@
 @echo off
-java -jar "octranspo.jar" %1
+java -jar "%~dp0\octranspo.jar" %1
