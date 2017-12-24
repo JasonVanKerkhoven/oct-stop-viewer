@@ -41,11 +41,33 @@ public abstract class Main
 	//execution
 	public static void main(String[] args) 
 	{
-		//run using app window
+		//declaring config variables
+		boolean debug = false;
+		boolean squashEmpty = true;
+		Integer stopNum = null;
+		Integer updateFreq = null;		//call limit of 10k per day ==> 6.94 per min
+		
+		//parse parameters
+		for (String arg : args)
+		{
+			switch (arg)
+			{
+				//set debug true
+				case("-d"):
+					debug = true;
+					break;
+				//print all routes (even with no trips)
+				case("-a"):
+					squashEmpty = false;
+				
+				
+			}
+		}
+		
+		
+		//run octy
 		if(args.length <= 0 || args[0].equals("gui"))
 		{
-			//generate instance w/ GUI and run				TODO fix GUI
-			//new StopTimeController(APP_ID, API_KEY);
 			System.out.println("GUI non-functional");
 		}
 		//one shot for running used in terminal
@@ -57,7 +79,6 @@ public abstract class Main
 			
 			try
 			{
-				//parse parameters
 				if(args.length == 1)
 				{
 					printEmpty = false;
@@ -90,11 +111,11 @@ public abstract class Main
 			}
 			catch (ParseException e)
 			{
-				System.out.println(e.getMessage());	//TODO SO SOMETHING
+				System.out.println(e.getMessage());	//TODO HANDLE
 			}
 			catch (OCTException e)
 			{
-				System.out.println(e.getMessage());
+				System.out.println(e.getMessage()); //TODO HANDLE
 			}
 		}
 	}

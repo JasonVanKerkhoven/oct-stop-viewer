@@ -95,12 +95,14 @@ public class StopTimeFetcher
 	public String fetchAllBusTimes(int stopNum) throws IOException
 	{
 		//build URL
-		String httpParams =	"appID=" + APP_ID +			//add ID
+		String uri =	"appID=" + APP_ID +				//add ID
 						"&apiKey=" + API_KEY +			//add key
 						"&stopNo=" + stopNum +			//add stop number
 						"&format="  + HTTP_FORMAT;		//set format
-		String urlFull = GET_ALL_BUS_TIMES_URL + "?" + httpParams;
+		String urlFull = GET_ALL_BUS_TIMES_URL + "?" + uri;
 		InputStream dataStream = null;
+		
+		//open stream for HTTP req
         try 
         {
         	//init data stream from http server
