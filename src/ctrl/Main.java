@@ -33,11 +33,6 @@ import exceptions.OCTException;
 
 public abstract class Main 
 {
-	//declaring class constants
-	private static final String APP_ID 		= "6b5dfc58";
-	private static final String API_KEY 	= "1bac140937e949eace1827738526c557";
-	
-
 	//execution
 	public static void main(String[] args) 
 	{
@@ -59,18 +54,25 @@ public abstract class Main
 				//print all routes (even with no trips)
 				case("-a"):
 					squashEmpty = false;
-				
-				
+					break;
+				default:
+					try
+					{
+						stopNum = Integer.parseInt(arg);
+					}
+					catch (NumberFormatException e)
+					{
+						System.out.println("StopNo must be a valid 32bit integer");
+						System.exit(0);
+					}
+					break;
 			}
 		}
 		
-		
-		//run octy
-		if(args.length <= 0 || args[0].equals("gui"))
+		if (stopNum == null)
 		{
-			System.out.println("GUI non-functional");
+			
 		}
-		//one shot for running used in terminal
 		else
 		{
 			//declaring possible parameters
@@ -91,7 +93,7 @@ public abstract class Main
 				}
 				
 				//create new fetcher and check stop num for validity
-				StopTimeFetcher fetcher = new StopTimeFetcher(APP_ID, API_KEY);
+				StopTimeFetcher fetcher = new StopTimeFetcher();
 				
 				//fetch and parse bus info
 				System.out.println("Fetching...");
