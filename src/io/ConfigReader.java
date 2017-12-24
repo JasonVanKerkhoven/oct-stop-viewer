@@ -9,9 +9,6 @@ import exceptions.ConfigException;
 
 public class ConfigReader
 {
-	//declaring class constants
-	private static final int MIN_PERIOD = 15;
-	
 	//declaring local instance variables
 	private String configPath;
 	private String config;
@@ -25,7 +22,7 @@ public class ConfigReader
 		//init
 		this.configPath = configPath;
 		this.config = "";
-		this.stops = new int[0];
+		this.stops = null;
 		this.period = -1;
 	}
 	
@@ -119,11 +116,6 @@ public class ConfigReader
 								newPeriod = newPeriod*3600;
 								break;
 						}
-						//enforce min update period of 15sec
-						if (newPeriod < MIN_PERIOD)
-						{
-							newPeriod = MIN_PERIOD;
-						}
 						
 					}
 					//format for new stop
@@ -181,7 +173,6 @@ public class ConfigReader
 	public static void main(String[] args) throws ConfigException 
 	{
 		ConfigReader reader = new ConfigReader("config/stops.cfg");
-		System.out.println(reader.toString());
 		System.out.println(reader.parse());
 		System.out.println(reader.parse());
 		System.out.println(reader.parse());

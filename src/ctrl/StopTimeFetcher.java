@@ -51,11 +51,8 @@ import exceptions.OCTException;
 public class StopTimeFetcher 
 {
 	//declaring static class constants
-	private static final String APP_ID_DEFAULT 	= "6b5dfc58";
-	private static final String API_KEY_DEFAULT = "1bac140937e949eace1827738526c557";
 	private static final String HTTP_FORMAT = "json";
 	private static final String RESPONSE_FORMAT = "UTF-8";
-	
 	public static final String GET_ALL_BUS_TIMES_URL = "http://api.octranspo1.com/v1.2/GetNextTripsForStopAllRoutes";
 	
 	//declaring possible error codes
@@ -71,12 +68,6 @@ public class StopTimeFetcher
 	
 	
 	//generic constructor
-	public StopTimeFetcher()
-	{
-		this(APP_ID_DEFAULT, API_KEY_DEFAULT);
-	}
-	
-	//custom id/key
 	public StopTimeFetcher(String id, String key)
 	{
 		APP_ID = id;
@@ -341,77 +332,6 @@ public class StopTimeFetcher
 		catch (NumberFormatException e)
 		{
 			throw new ParseException(0);		//TODO replace 0 with non-null parameter
-		}
-	}
-	
-	
-	//execution
-	public static void main(String[] args) 
-	{
-		//declaring config variables
-		boolean debug = false;
-		boolean printEmpty = false;
-		int stopNo = -1;
-		
-		//parse parameters
-		for (String arg : args)
-		{
-			switch (arg)
-			{
-				//set debug true
-				case("-d"):
-					debug = true;
-					break;
-				//print all routes (even with no trips)
-				case("-a"):
-					printEmpty = true;
-					break;
-				default:
-					try
-					{
-						stopNo = Integer.parseInt(arg);
-					}
-					catch (NumberFormatException e)
-					{
-						System.out.println("Stop number must be integer in range 0 - " + Integer.MAX_VALUE);
-						System.exit(0);
-					}
-					break;
-			}
-		}
-		
-		//get stop info
-		if (stopNo > 0)
-		{
-			try
-			{
-				//create new fetcher
-				StopTimeFetcher fetcher = new StopTimeFetcher();
-				
-				//fetch and parse bus info
-				System.out.println("Fetching...");
-				BusStop stop = fetcher.fetchAndParseAllStopTimes(stopNo);
-				
-				//print
-				System.out.println("\n" + stop.getPrintable(printEmpty));
-			}
-			catch (IOException e)
-			{
-				System.out.println(e.getMessage());
-				System.out.println("Cannot reach URL \"" + StopTimeFetcher.GET_ALL_BUS_TIMES_URL + "\"");
-			}
-			catch (ParseException e)
-			{
-				System.out.println(e.getMessage());	//TODO HANDLE
-			}
-			catch (OCTException e)
-			{
-				System.out.println(e.getMessage()); //TODO HANDLE
-			}
-		}
-		else
-		{
-			System.out.println("Must give valid stop number");
 		}
 	}
 }
