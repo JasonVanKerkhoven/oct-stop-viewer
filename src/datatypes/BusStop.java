@@ -51,7 +51,8 @@ public class BusStop
 				boolean tripFlag = false;
 				for (Route route : routes)
 				{
-					if (tripFlag = route.isTripsScheduled())
+					tripFlag = route.isTripsScheduled();
+					if(tripFlag)
 					{
 						break;
 					}
@@ -60,7 +61,7 @@ public class BusStop
 				//return if no trips found
 				if (!tripFlag)
 				{
-					return ("No trips found");
+					return ("No scheduled routes found\n");
 				}
 			}
 			
@@ -76,7 +77,7 @@ public class BusStop
 		}
 		else
 		{
-			s += "No scheduled buses found";
+			s += "No scheduled routes found\n";
 		}
 		
 		return s;
