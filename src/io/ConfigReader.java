@@ -16,7 +16,7 @@ public class ConfigReader
 	private String configPath;
 	private String config;
 	private int[] stops;
-	private int period;
+	private long period;
 	
 	
 	//generic constructor
@@ -42,7 +42,7 @@ public class ConfigReader
 	{
 		return stops;
 	}
-	public int getPeriod()
+	public long getPeriod()
 	{
 		return period;
 	}
@@ -112,11 +112,14 @@ public class ConfigReader
 						//convert update period to seconds
 						switch(unit)
 						{
+							case('s'):
+								newPeriod = newPeriod*1000;
+								break;
 							case('m'):		
-								newPeriod = newPeriod*60;
+								newPeriod = newPeriod*60*1000;
 								break;
 							case('h'):
-								newPeriod = newPeriod*3600;
+								newPeriod = newPeriod*60*60*1000;
 								break;
 						}
 						//enforce min update period of 15sec
