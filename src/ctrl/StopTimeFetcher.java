@@ -152,7 +152,7 @@ public class StopTimeFetcher
 	{
 		//fetch stop info
 		String json = fetchAllBusTimes(stopNum);
-		//System.out.println(json); //DEBUG
+		System.out.println(json); //DEBUG
 		
 		//declaring method variables
 		JSONParser parser = new JSONParser();

@@ -30,7 +30,9 @@ import datatypes.BusStop;
 import exceptions.ConfigException;
 import exceptions.OCTException;
 import io.ConfigReader;
-import ui.OctyDisplay;
+import ui.FancyDisplay;
+import ui.SimpleDisplay;
+import ui.StopDisplay;
 
 
 
@@ -67,8 +69,8 @@ public abstract class DisplayMain
 		//init variables
 		StopTimeFetcher fetcher = new StopTimeFetcher();
 		ConfigReader config = new ConfigReader(configPath);
-		OctyDisplay display = new OctyDisplay(true);
-		
+		StopDisplay display = new FancyDisplay(true, true, 6);
+
 		//main update loop
 		while (true)
 		{
@@ -76,11 +78,12 @@ public abstract class DisplayMain
 			{
 				config.parse();
 				String s = "";
-				for (int stopNo : config.getStops())
+				BusStop[] arr = new BusStop[config.getStops().length];
+				for (int i=0; i<config.getStops().length; i++)
 				{
-					s += fetcher.fetchAndParseAllStopTimes(stopNo).getPrintable(printEmpty);
+					arr[i] = fetcher.fetchAndParseAllStopTimes(config.getStops()[i]);
 				}
-				display.setOutput(s);
+				display.updateStops(arr);
 				
 				//sleep
 				Thread.sleep(config.getPeriod());

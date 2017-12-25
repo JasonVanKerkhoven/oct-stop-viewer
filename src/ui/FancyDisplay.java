@@ -5,14 +5,20 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
 import java.awt.BorderLayout;
 import javax.swing.JTextArea;
 
-public class OctyDisplay extends JFrame
+
+
+import datatypes.BusStop;
+import datatypes.Route;
+import datatypes.Trip;
+
+import java.awt.GridLayout;
+
+public class FancyDisplay extends JFrame implements StopDisplay
 {
 	//ASCII
 	private static final String ASCII = 
@@ -31,15 +37,15 @@ public class OctyDisplay extends JFrame
 	//declaring class constants
 	private static final Font ASCII_FONT = new Font("Monospaced", Font.PLAIN, 8);
 	private static final Font DEFAULT_FONT = new Font("Monospaced", Font.PLAIN, 16);
-	private static final Color DEFAULT_PADDING_COLOR = Color.BLACK;
-	private static final Color DEFAULT_BACKGROUND_COLOR = Color.BLACK;
+	private static final Color DEFAULT_BACKGROUND_COLOR = new Color(48, 10, 36);
 	private static final Color DEFAULT_TEXT_COLOR = Color.ORANGE;
-	private static final int PADDING = 25;
+	private static final Color DEFAULT_PADDING_COLOR = DEFAULT_BACKGROUND_COLOR;
+	private static final int PADDING = 15;
 	
 	//declaring local instance variables
-	JTextArea header;
-	JTextArea timeOuput;
-	JTextArea mainOutput;
+	private DisplayCell[] cells;
+	private boolean printEmpty;
+	private int displayLines;
 	
 	
 	//return current time
@@ -49,18 +55,8 @@ public class OctyDisplay extends JFrame
 	}
 	
 	
-	//format jtextarea
-	private static void initJTextArea(JTextArea a)
-	{
-		a.setBackground(DEFAULT_BACKGROUND_COLOR);
-		a.setForeground(DEFAULT_TEXT_COLOR);
-		a.setFont(DEFAULT_FONT);
-		a.setEditable(false);
-	}
-	
-	
 	//generic constructor
-	public OctyDisplay(boolean fullscreen) 
+	public FancyDisplay(boolean fullscreen, boolean printEmpty, int displayLines)
 	{
 		//init frame
 		super();
@@ -68,11 +64,14 @@ public class OctyDisplay extends JFrame
 		this.getContentPane().setBackground(DEFAULT_BACKGROUND_COLOR);
 		this.getContentPane().setForeground(DEFAULT_TEXT_COLOR);
 		this.getContentPane().setLayout(new BorderLayout(0,0));
+		this.printEmpty = printEmpty;
+		this.displayLines = displayLines;
+		
 		
 		//add padding
 		JPanel mainPanel, eastPad, westPad, northPad, southPad;
 		mainPanel = new JPanel();
-		mainPanel.setBackground(DEFAULT_PADDING_COLOR);
+		mainPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
 		mainPanel.setLayout(new BorderLayout(20,20));
 		eastPad = new JPanel();
 		eastPad.setBackground(DEFAULT_PADDING_COLOR);
@@ -93,28 +92,36 @@ public class OctyDisplay extends JFrame
 		this.getContentPane().add(westPad, BorderLayout.WEST);
 		
 		
-		//add JFrame to hold header
-		JPanel auxPanel = new JPanel();
+		//add aux panel and bus panel
+		JPanel auxPanel = new JPanel(new BorderLayout(0,0));
+		JPanel busPanel = new JPanel(new GridLayout(displayLines, 1, 0, 0));
 		auxPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
-		auxPanel.setLayout(new BorderLayout(20, 20));
+		busPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
+		busPanel.setBorder(null);
+		auxPanel.setBorder(null);
 		mainPanel.add(auxPanel, BorderLayout.EAST);
+		mainPanel.add(busPanel, BorderLayout.CENTER);
 		
-		//add and config header
-		header = new JTextArea();
-		initJTextArea(header);
+		
+		//add to aux panel
+		JTextArea header = new JTextArea();
+		header.setBackground(DEFAULT_BACKGROUND_COLOR);
+		header.setForeground(DEFAULT_TEXT_COLOR);
+		header.setEditable(false);
+		header.setHighlighter(null);
 		header.setFont(ASCII_FONT);
 		header.setText(ASCII);
 		auxPanel.add(header, BorderLayout.NORTH);
 		
-		//add and config east aux
-		timeOuput = new JTextArea();
-		initJTextArea(timeOuput);
-		auxPanel.add(timeOuput, BorderLayout.SOUTH);
 		
-		//add and config main output
-		mainOutput = new JTextArea();
-		initJTextArea(mainOutput);
-		mainPanel.add(mainOutput, BorderLayout.CENTER);
+		//add display lines to bus
+		cells = new DisplayCell[displayLines];
+		for (int i=0; i<displayLines; i++)
+		{
+			cells[i] = new DisplayCell("TITLE --> " +i,"under text");
+			busPanel.add(cells[i]);
+		}
+		
 		
 		//set visible
 		if (fullscreen)
@@ -123,14 +130,56 @@ public class OctyDisplay extends JFrame
 			this.setUndecorated(true);
 		}
 		this.setVisible(true);
-		this.setOutput("SAMPLE TEXT");
 	}
 	
 	
 	//set main output text
-	public void setOutput(String text)
+	public void updateStops(BusStop[] stopArr)
 	{
-		timeOuput.setText("@ " + getCurrentTime());
-		mainOutput.setText(text);
+		int i=0;
+		for (BusStop stop : stopArr)
+		{
+			//form base title
+			String stopTitle = "no." + stop.stopNum;
+			
+			//get routes
+			if (stop.routes.length > 0)
+			{
+				for (Route route : stop.routes)
+				{
+					String routeTitle = stopTitle + ": " + route.routeNum + " " + route.direction;
+					if (route.isTripsScheduled())
+					{
+						String etas = "";
+						for (Trip trip : route.trips)
+						{
+							if (!etas.isEmpty())
+							{
+								etas += ", ";
+							}
+							etas += trip.adjustedScheduleTime;
+							if (trip.adjustmentAge >= 0)
+							{
+								etas += "*";
+							}
+						}
+						cells[i].setText(routeTitle, etas);
+					}
+					else if (printEmpty)
+					{
+						cells[i].setText(routeTitle, "No trips avalible");
+					}
+					else
+					{
+						i--;
+					}
+				}
+			}
+			else
+			{
+				cells[i].setText(stopTitle, "No routes avalible");
+			}
+			i++;
+		}
 	}
 }
