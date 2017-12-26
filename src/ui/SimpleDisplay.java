@@ -144,4 +144,8 @@ public class SimpleDisplay extends JFrame implements StopDisplay
 		}
 		mainOutput.setText(s);
 	}
+
+
+	@Override
+	public void setInfo(String txt) {}
 }

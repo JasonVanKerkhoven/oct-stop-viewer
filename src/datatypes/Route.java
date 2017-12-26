@@ -17,8 +17,9 @@ package datatypes;
 
 public class Route
 {
-	//declaring local class constants
+	//declaring class constants
 	public static final String DIV = "\n-------------------------------------";
+	public static final int OTRAIN = 2;
 	
 	//declaring local instance constants
 	public final int routeNum;
@@ -60,7 +61,9 @@ public class Route
 	//get a nice printable of Route information in a list
 	public String getPrintableList(boolean printEmpty)
 	{
-		String s  = "Route " + routeNum + ":\t" + heading + ", " + direction + DIV;
+		String s;
+		if (routeNum == OTRAIN)		s = "O-Train:\t" + heading + ", " + direction + DIV;
+		else						s = "Route " + routeNum + ":\t" + heading + ", " + direction + DIV;
 		
 		if (trips != null)
 		{
