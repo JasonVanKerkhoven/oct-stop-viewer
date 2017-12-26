@@ -5,14 +5,16 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
 import java.awt.BorderLayout;
 import javax.swing.JTextArea;
 
-public class OctyDisplay extends JFrame
+
+
+import datatypes.BusStop;
+
+public class SimpleDisplay extends JFrame implements StopDisplay
 {
 	//ASCII
 	private static final String ASCII = 
@@ -37,9 +39,10 @@ public class OctyDisplay extends JFrame
 	private static final int PADDING = 25;
 	
 	//declaring local instance variables
-	JTextArea header;
-	JTextArea timeOuput;
-	JTextArea mainOutput;
+	private boolean printEmpty;
+	private JTextArea header;
+	private JTextArea timeOuput;
+	private JTextArea mainOutput;
 	
 	
 	//return current time
@@ -60,7 +63,7 @@ public class OctyDisplay extends JFrame
 	
 	
 	//generic constructor
-	public OctyDisplay(boolean fullscreen) 
+	public SimpleDisplay(boolean fullscreen, boolean printEmpty) 
 	{
 		//init frame
 		super();
@@ -68,6 +71,9 @@ public class OctyDisplay extends JFrame
 		this.getContentPane().setBackground(DEFAULT_BACKGROUND_COLOR);
 		this.getContentPane().setForeground(DEFAULT_TEXT_COLOR);
 		this.getContentPane().setLayout(new BorderLayout(0,0));
+		
+		//init instance variables
+		this.printEmpty = printEmpty;
 		
 		//add padding
 		JPanel mainPanel, eastPad, westPad, northPad, southPad;
@@ -123,14 +129,23 @@ public class OctyDisplay extends JFrame
 			this.setUndecorated(true);
 		}
 		this.setVisible(true);
-		this.setOutput("SAMPLE TEXT");
+		mainOutput.setText("SAMPLE TEXT");
 	}
 	
 	
 	//set main output text
-	public void setOutput(String text)
+	public void updateStops(BusStop[] stopArr)
 	{
 		timeOuput.setText("@ " + getCurrentTime());
-		mainOutput.setText(text);
+		String s = "";
+		for (BusStop stop : stopArr)
+		{
+			s += stop.getPrintable(printEmpty);
+		}
+		mainOutput.setText(s);
 	}
+
+
+	@Override
+	public void setInfo(String txt) {}
 }
