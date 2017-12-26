@@ -43,6 +43,7 @@ public class FancyDisplay extends JFrame implements StopDisplay
 	private static final int PADDING = 15;
 	
 	//declaring local instance variables
+	private JTextArea log;
 	private DisplayCell[] cells;
 	private boolean printEmpty;
 	private int displayLines;
@@ -51,7 +52,7 @@ public class FancyDisplay extends JFrame implements StopDisplay
 	//return current time
 	private static String getCurrentTime() 
 	{
-	    return new SimpleDateFormat("HH:mm:ss").format(new Date());
+	    return new SimpleDateFormat("hh:mm:ss aa").format(new Date());
 	}
 	
 	
@@ -113,12 +114,21 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		header.setText(ASCII);
 		auxPanel.add(header, BorderLayout.NORTH);
 		
+		log = new JTextArea();
+		log.setBorder(null);
+		log.setBackground(DEFAULT_BACKGROUND_COLOR);
+		log.setForeground(DEFAULT_TEXT_COLOR);
+		log.setFont(DEFAULT_FONT);
+		log.setEditable(false);
+		log.setHighlighter(null);
+		auxPanel.add(log, BorderLayout.SOUTH);
+		
 		
 		//add display lines to bus
 		cells = new DisplayCell[displayLines];
 		for (int i=0; i<displayLines; i++)
 		{
-			cells[i] = new DisplayCell("TITLE --> " +i,"under text");
+			cells[i] = new DisplayCell();
 			busPanel.add(cells[i]);
 		}
 		
@@ -130,6 +140,13 @@ public class FancyDisplay extends JFrame implements StopDisplay
 			this.setUndecorated(true);
 		}
 		this.setVisible(true);
+	}
+	
+	
+	//set text on onscreen logger
+	public void setInfo(String txt)
+	{
+		log.setText(getCurrentTime() + "\n" + txt);
 	}
 	
 	
@@ -147,10 +164,15 @@ public class FancyDisplay extends JFrame implements StopDisplay
 			{
 				for (Route route : stop.routes)
 				{
-					String routeTitle = stopTitle + ": " + route.routeNum + " " + route.direction;
+					//add route info to title
+					String routeTitle, r;
+					if (route.routeNum == Route.OTRAIN)		r = "O-Train";
+					else									r = route.routeNum+"";
+					routeTitle = stopTitle + ": " + r + " " + route.direction;
+					
 					if (route.isTripsScheduled())
 					{
-						String etas = "";
+						String etas = "ETA ... ";
 						for (Trip trip : route.trips)
 						{
 							if (!etas.isEmpty())

@@ -56,12 +56,16 @@ public class DisplayCell extends JPanel
 		title.setBackground(bg);
 		title.setForeground(FONT_COLOR);
 		title.setBorder(null);
+		title.setHighlighter(null);
 		title.setFont(TITLE_FONT);
+		title.setEditable(false);
 		
 		info.setBackground(bg);
 		info.setForeground(FONT_COLOR);
 		info.setBorder(null);
+		info.setHighlighter(null);
 		info.setFont(INFO_FONT);
+		info.setEditable(false);
 		
 		this.add(title, BorderLayout.NORTH);
 		this.add(info, BorderLayout.CENTER);
@@ -76,6 +80,6 @@ public class DisplayCell extends JPanel
 	public void setText(String titleStr, String infoStr)
 	{
 		this.title.setText(" "+titleStr);
-		this.info.setText("  ETA ... "+infoStr);
+		this.info.setText("  "+infoStr);
 	}
 }

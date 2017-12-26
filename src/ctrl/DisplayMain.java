@@ -76,6 +76,7 @@ public abstract class DisplayMain
 		{
 			try 
 			{
+				display.setInfo("Updating...");
 				config.parse();
 				String s = "";
 				BusStop[] arr = new BusStop[config.getStops().length];
@@ -83,6 +84,7 @@ public abstract class DisplayMain
 				{
 					arr[i] = fetcher.fetchAndParseAllStopTimes(config.getStops()[i]);
 				}
+				display.setInfo("Idle");
 				display.updateStops(arr);
 				
 				//sleep

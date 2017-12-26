@@ -224,7 +224,8 @@ public class StopTimeFetcher
 			}
 			else
 			{
-				//ERROR TODO
+				System.out.println("ERROR");		//TODO handle this
+				System.exit(0);
 			}
 
 
