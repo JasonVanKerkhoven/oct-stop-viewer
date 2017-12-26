@@ -76,6 +76,6 @@ public class DisplayCell extends JPanel
 	public void setText(String titleStr, String infoStr)
 	{
 		this.title.setText(" "+titleStr);
-		this.info.setText("  "+infoStr);
+		this.info.setText("  ETA ... "+infoStr);
 	}
 }

@@ -195,24 +195,36 @@ public class StopTimeFetcher
 
 			//unwrap route information
 			JSONArray routeArr = null;
-			layer = (JSONObject)parser.parse(jsonString);
-			jsonString = layer.get("Route").toString();
-
-			//check if multiple routes nested in array
-			Object parsed = parser.parse(jsonString);
-			if (parsed.getClass() == JSONArray.class)
+			Object routeLayer = parser.parse(jsonString);
+			if (routeLayer.getClass() == JSONArray.class)
 			{
-				routeArr = (JSONArray)parsed;
+				routeArr = (JSONArray)routeLayer;
 			}
-			else if (parsed.getClass() == JSONObject.class)
+			else if (routeLayer.getClass() == JSONObject.class)
 			{
-				routeArr = new JSONArray();
-				routeArr.add(parsed);
+				layer = (JSONObject)routeLayer;
+				jsonString = layer.get("Route").toString();
+
+				//check if multiple routes nested in array
+				Object parsed = parser.parse(jsonString);
+				if (parsed.getClass() == JSONArray.class)
+				{
+					routeArr = (JSONArray)parsed;
+				}
+				else if (parsed.getClass() == JSONObject.class)
+				{
+					routeArr = new JSONArray();
+					routeArr.add(parsed);
+				}
+				else
+				{
+					System.out.println("ERROR");		//TODO handle this
+					System.exit(0);
+				}
 			}
 			else
 			{
-				System.out.println("ERROR");		//TODO handle this
-				System.exit(0);
+				//ERROR TODO
 			}
 
 
