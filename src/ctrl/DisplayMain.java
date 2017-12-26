@@ -74,6 +74,7 @@ public abstract class DisplayMain
 		//main update loop
 		while (true)
 		{
+			//fetch new information and update
 			try 
 			{
 				display.setInfo("Updating...");
@@ -86,29 +87,38 @@ public abstract class DisplayMain
 				}
 				display.setInfo("Idle");
 				display.updateStops(arr);
-				
-				//sleep
-				Thread.sleep(config.getPeriod());
-			} 
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
 			}
-			catch (ConfigException e) 
-			{
-				e.printStackTrace();
-			}
-			catch (OCTException e)
-			{
-				e.printStackTrace();
-			}
+			
+			//handle errors
 			catch (ParseException e)
 			{
-				e.printStackTrace();
+				display.setInfo("JSON parsing error:\n" + e.getMessage());
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				display.setInfo(e.getMessage());
+			}
+			catch (ConfigException e) 
+			{
+				display.setInfo("Error in .cfg file:\n" + e.getMessage());
+				display.setError("hello");
+			}
+			catch (OCTException e)
+			{
+				display.setInfo(e.getMessage());
+			}
+			
+			//sleep
+			finally
+			{
+				try
+				{
+					Thread.sleep((config.getPeriod() != -1)?config.getPeriod():ConfigReader.MIN_PERIOD_SEC*1000);
+				}
+				catch (InterruptedException e)
+				{
+					//TODO point of no return 
+				}
 			}
 		}
 	}

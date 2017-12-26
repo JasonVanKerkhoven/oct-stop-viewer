@@ -43,10 +43,12 @@ public class FancyDisplay extends JFrame implements StopDisplay
 	private static final int PADDING = 15;
 	
 	//declaring local instance variables
-	private JTextArea log;
+	private JPanel mainPanel, busPanel, errorPanel;
+	private JTextArea log, errorMsg;
 	private DisplayCell[] cells;
 	private boolean printEmpty;
 	private int displayLines;
+	private boolean errorState;
 	
 	
 	//return current time
@@ -70,7 +72,7 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		
 		
 		//add padding
-		JPanel mainPanel, eastPad, westPad, northPad, southPad;
+		JPanel eastPad, westPad, northPad, southPad;
 		mainPanel = new JPanel();
 		mainPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
 		mainPanel.setLayout(new BorderLayout(20,20));
@@ -95,7 +97,7 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		
 		//add aux panel and bus panel
 		JPanel auxPanel = new JPanel(new BorderLayout(0,0));
-		JPanel busPanel = new JPanel(new GridLayout(displayLines, 1, 0, 0));
+		busPanel = new JPanel(new GridLayout(displayLines, 1, 0, 0));
 		auxPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
 		busPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
 		busPanel.setBorder(null);
@@ -133,6 +135,33 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		}
 		
 		
+		//prep error panel
+		errorPanel = new JPanel(new BorderLayout(20,20)); 
+		errorPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
+		errorPanel.setBorder(null);
+		
+		//add text/header to error panel
+		JTextArea errHeader = new JTextArea();
+		errHeader.setBackground(DEFAULT_BACKGROUND_COLOR);
+		errHeader.setForeground(DEFAULT_TEXT_COLOR);
+		errHeader.setEditable(false);
+		errHeader.setHighlighter(null);
+		errHeader.setFont(ASCII_FONT);
+		errHeader.setText(ASCII);
+		errorPanel.add(errHeader, BorderLayout.NORTH);
+		
+		errorMsg = new JTextArea();
+		errorMsg.setBorder(null);
+		errorMsg.setBackground(DEFAULT_BACKGROUND_COLOR);
+		errorMsg.setForeground(DEFAULT_TEXT_COLOR);
+		errorMsg.setFont(DEFAULT_FONT);
+		errorMsg.setEditable(false);
+		errorMsg.setHighlighter(null);
+		errorPanel.add(errorMsg, BorderLayout.CENTER);
+		
+		
+		
+		
 		//set visible
 		if (fullscreen)
 		{
@@ -140,6 +169,8 @@ public class FancyDisplay extends JFrame implements StopDisplay
 			this.setUndecorated(true);
 		}
 		this.setVisible(true);
+		busPanel.setVisible(true);
+		errorPanel.setVisible(false);
 	}
 	
 	
@@ -147,6 +178,34 @@ public class FancyDisplay extends JFrame implements StopDisplay
 	public void setInfo(String txt)
 	{
 		log.setText(getCurrentTime() + "\n" + txt);
+	}
+	
+	
+	//set error state high or low
+	public void clearError()
+	{
+		//set states
+		if (errorState)
+		{
+			errorState = false;
+			mainPanel.add(busPanel, BorderLayout.CENTER);
+			errorMsg.setText("");
+		}
+	}
+	
+	
+	//set error message
+	public void setError(String msg)
+	{
+		//set states
+		if (!errorState)
+		{
+			errorState = true;
+			mainPanel.add(errorMsg, BorderLayout.CENTER);
+		}
+		
+		//display message
+		
 	}
 	
 	
@@ -172,17 +231,39 @@ public class FancyDisplay extends JFrame implements StopDisplay
 					
 					if (route.isTripsScheduled())
 					{
-						String etas = "ETA ... ";
+						String etas = "";
 						for (Trip trip : route.trips)
 						{
+							//add preface/formating
 							if (!etas.isEmpty())
 							{
 								etas += ", ";
 							}
-							etas += trip.adjustedScheduleTime;
+							else
+							{
+								etas = "ETA ... ";
+							}
+							
+							//add time
+							if (trip.adjustedScheduleTime <= 60)
+							{
+								etas += trip.adjustedScheduleTime;
+							}
+							else
+							{
+								int h = trip.adjustedScheduleTime / 60;
+								int m = trip.adjustedScheduleTime % 60;
+								etas += h + "h" + ":" + m + "m";
+							}
+							
+							//add trailers
 							if (trip.adjustmentAge >= 0)
 							{
 								etas += "*";
+							}
+							if (trip.isLastTrip)
+							{
+								etas += " (LAST TRIP)";
 							}
 						}
 						cells[i].setText(routeTitle, etas);
