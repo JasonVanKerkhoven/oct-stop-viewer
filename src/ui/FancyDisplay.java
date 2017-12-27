@@ -311,22 +311,20 @@ public class FancyDisplay extends JFrame implements StopDisplay
 							}
 						}
 						cells[i].setText(routeTitle, etas);
+						i++;
 					}
 					else if (printEmpty)
 					{
 						cells[i].setText(routeTitle, "No trips avalible");
-					}
-					else
-					{
-						i--;
+						i++;
 					}
 				}
 			}
 			else
 			{
 				cells[i].setText(stopTitle, "No routes avalible");
+				i++;
 			}
-			i++;
 		}
 	}
 }

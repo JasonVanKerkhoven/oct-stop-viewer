@@ -38,6 +38,9 @@ import ui.StopDisplay;
 
 public abstract class DisplayMain 
 {
+	//declaring static constants
+	private static final int SLOTS = 8;
+	
 	//execution
 	public static void main(String[] args) 
 	{		
@@ -70,7 +73,7 @@ public abstract class DisplayMain
 		boolean error = false;
 		StopTimeFetcher fetcher = new StopTimeFetcher();
 		ConfigReader config = new ConfigReader(configPath);
-		StopDisplay display = new FancyDisplay(true, true, 6);
+		StopDisplay display = new FancyDisplay(true, true, SLOTS);
 
 		//main update loop
 		while (true)

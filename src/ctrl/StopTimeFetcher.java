@@ -246,119 +246,126 @@ public class StopTimeFetcher
 				dirID = Integer.parseInt(layer.get("DirectionID").toString());
 				dir = layer.get("Direction").toString();
 				heading = layer.get("RouteHeading").toString();
-				jsonString = layer.get("Trips").toString();
+				Object tripParsed = layer.get("Trips");
 				
-				//unwrap trip information into array (OC Transpo returns 5 different ways due to partial updates on their API >:[ )
-				if (jsonString != null && !jsonString.isEmpty())
+				if (tripParsed != null)
 				{
-					JSONArray tripArr = null;
-					Object tripParsed = parser.parse(jsonString);
-					if (tripParsed.getClass() == JSONObject.class)
+					jsonString = tripParsed.toString();
+					//unwrap trip information into array (OC Transpo returns 5 different ways due to partial updates on their API >:[ )
+					if (jsonString != null && !jsonString.isEmpty())
 					{
-						layer = (JSONObject)parser.parse(jsonString);
-						System.out.println(layer.toString());
-						Object tripGet = layer.get("Trip");
-						
-						//trip information nested in Trip
-						if (tripGet != null)
+						JSONArray tripArr = null;
+						tripParsed = parser.parse(jsonString);
+						if (tripParsed.getClass() == JSONObject.class)
 						{
-							jsonString = tripGet.toString();
+							layer = (JSONObject)parser.parse(jsonString);
+							Object tripGet = layer.get("Trip");
 							
-							//check if multiple routes nested in array
-							tripParsed = parser.parse(jsonString);
-							if (tripParsed.getClass() == JSONArray.class)
+							//trip information nested in Trip
+							if (tripGet != null)
 							{
-								tripArr = (JSONArray)tripParsed;
+								jsonString = tripGet.toString();
+								
+								//check if multiple routes nested in array
+								tripParsed = parser.parse(jsonString);
+								if (tripParsed.getClass() == JSONArray.class)
+								{
+									tripArr = (JSONArray)tripParsed;
+								}
+								else if (tripParsed.getClass() == JSONObject.class)
+								{
+									tripArr = new JSONArray();
+									tripArr.add(tripParsed);
+								}
+								else
+								{
+									System.out.println("ERROR");		//TODO handle this
+									System.exit(0);
+								}
 							}
-							else if (tripParsed.getClass() == JSONObject.class)
+							//trip information given explicitly 
+							else
 							{
 								tripArr = new JSONArray();
-								tripArr.add(tripParsed);
+								tripArr.add((JSONObject)parser.parse(jsonString));
+							}
+						}
+						else if (tripParsed.getClass() == JSONArray.class)
+						{
+							tripArr = (JSONArray)tripParsed;
+						}
+						else
+						{
+							System.out.println("ERROR");		//TODO handle this
+							System.exit(0);
+						}
+						
+						//prep array to hold trips
+						trips = new Trip[tripArr.size()];
+						
+						//iterate through all JSON objects in array
+						for (int i=0; i < tripArr.size(); i++)
+						{
+							//declaring trip states
+							String dest, startTime, type;
+							int adjTime;
+							boolean lastTrip;
+							double adjAge, lat, lon, gps;
+		
+							//parse data from trip at index
+							layer = (JSONObject)parser.parse(tripArr.get(i).toString());
+							//save mandatory fields and convert to relevant datatype
+							dest = layer.get("TripDestination").toString();
+							startTime = layer.get("TripStartTime").toString();
+							adjTime = Integer.parseInt(layer.get("AdjustedScheduleTime").toString());
+							adjAge = Double.parseDouble(layer.get("AdjustmentAge").toString());
+							lastTrip = Boolean.parseBoolean(layer.get("LastTripOfSchedule").toString());
+							type = layer.get("BusType").toString();
+		
+							//check if latitude data exists and save
+							String s;
+							if ((s = layer.get("Latitude").toString()).isEmpty())
+							{
+								lat = Double.NaN;
 							}
 							else
 							{
-								System.out.println("ERROR");		//TODO handle this
-								System.exit(0);
+								lat = Double.parseDouble(s);
 							}
+							//check if longitude data exists and save
+							if ((s = layer.get("Longitude").toString()).isEmpty())
+							{
+								lon = Double.NaN;
+							}
+							else
+							{
+								lon = Double.parseDouble(s);
+							}
+							//check if GPS Speed data exists and save
+							if ((s = layer.get("GPSSpeed").toString()).isEmpty())
+							{
+								gps = Double.NaN;
+							}
+							else
+							{
+								gps = Double.parseDouble(s);
+							}
+		
+							//construct trip and save to master trip array
+							trips[i] = new Trip(dest,
+									startTime,
+									adjTime,
+									adjAge,
+									lastTrip,
+									type,
+									lat,
+									lon,
+									gps);
 						}
-						//trip information given explicitly 
-						else
-						{
-							tripArr = new JSONArray();
-							tripArr.add((JSONObject)parser.parse(jsonString));
-						}
-					}
-					else if (tripParsed.getClass() == JSONArray.class)
-					{
-						tripArr = (JSONArray)tripParsed;
 					}
 					else
 					{
-						System.out.println("ERROR");		//TODO handle this
-						System.exit(0);
-					}
-					
-					//prep array to hold trips
-					trips = new Trip[tripArr.size()];
-					
-					//iterate through all JSON objects in array
-					for (int i=0; i < tripArr.size(); i++)
-					{
-						//declaring trip states
-						String dest, startTime, type;
-						int adjTime;
-						boolean lastTrip;
-						double adjAge, lat, lon, gps;
-	
-						//parse data from trip at index
-						layer = (JSONObject)parser.parse(tripArr.get(i).toString());
-						//save mandatory fields and convert to relevant datatype
-						dest = layer.get("TripDestination").toString();
-						startTime = layer.get("TripStartTime").toString();
-						adjTime = Integer.parseInt(layer.get("AdjustedScheduleTime").toString());
-						adjAge = Double.parseDouble(layer.get("AdjustmentAge").toString());
-						lastTrip = Boolean.parseBoolean(layer.get("LastTripOfSchedule").toString());
-						type = layer.get("BusType").toString();
-	
-						//check if latitude data exists and save
-						String s;
-						if ((s = layer.get("Latitude").toString()).isEmpty())
-						{
-							lat = Double.NaN;
-						}
-						else
-						{
-							lat = Double.parseDouble(s);
-						}
-						//check if longitude data exists and save
-						if ((s = layer.get("Longitude").toString()).isEmpty())
-						{
-							lon = Double.NaN;
-						}
-						else
-						{
-							lon = Double.parseDouble(s);
-						}
-						//check if GPS Speed data exists and save
-						if ((s = layer.get("GPSSpeed").toString()).isEmpty())
-						{
-							gps = Double.NaN;
-						}
-						else
-						{
-							gps = Double.parseDouble(s);
-						}
-	
-						//construct trip and save to master trip array
-						trips[i] = new Trip(dest,
-								startTime,
-								adjTime,
-								adjAge,
-								lastTrip,
-								type,
-								lat,
-								lon,
-								gps);
+						trips = new Trip[0];
 					}
 				}
 				else
