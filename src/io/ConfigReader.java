@@ -10,7 +10,7 @@ import exceptions.ConfigException;
 public class ConfigReader
 {
 	//declaring class constants
-	private static final int MIN_PERIOD = 15;
+	public static final int MIN_PERIOD_SEC = 15;
 	
 	//declaring local instance variables
 	private String configPath;
@@ -123,9 +123,9 @@ public class ConfigReader
 								break;
 						}
 						//enforce min update period of 15sec
-						if (newPeriod < MIN_PERIOD)
+						if (newPeriod < MIN_PERIOD_SEC*1000)
 						{
-							newPeriod = MIN_PERIOD;
+							newPeriod = MIN_PERIOD_SEC*1000;
 						}
 						
 					}
