@@ -3,11 +3,14 @@ package ui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
+
 import javax.swing.JTextArea;
 
 
@@ -21,7 +24,7 @@ import java.awt.GridLayout;
 public class FancyDisplay extends JFrame implements StopDisplay
 {
 	//ASCII
-	private static final String ASCII = 
+	private static final String ASCII_LOGO = 
 	"\n\n\n" + 
 	"    ,o888888o.         ,o888888o.8888888 8888888888    `8.`8888.      ,8'    \n" + 
 	" . 8888     `88.      8888     `88.    8 8888           `8.`8888.    ,8'     \n" + 
@@ -34,7 +37,28 @@ public class FancyDisplay extends JFrame implements StopDisplay
 	" ` 8888     ,88'      8888     ,88'    8 8888      8888       8 8888         \n" + 
 	"    `8888888P'         `8888888P'      8 8888      `88'       8 8888         \n\n"; 
 	
+	private static final String ASCII_ERROR = 
+	"\n\n\n" +
+	"8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888\n" +
+	"88                                                                                                88\n" + 
+	"88                                                                                                88\n" +
+	"88        8 8888888888   8 888888888o.   8 888888888o.      ,o888888o.     8 888888888o.          88\n" + 
+	"88        8 8888         8 8888    `88.  8 8888    `88.  . 8888     `88.   8 8888    `88.         88\n" + 
+	"88        8 8888         8 8888     `88  8 8888     `88 ,8 8888       `8b  8 8888     `88         88\n" + 
+	"88        8 8888         8 8888     ,88  8 8888     ,88 88 8888        `8b 8 8888     ,88         88\n" + 
+	"88        8 888888888888 8 8888.   ,88'  8 8888.   ,88' 88 8888         88 8 8888.   ,88'         88\n" + 
+	"88        8 8888         8 888888888P'   8 888888888P'  88 8888         88 8 888888888P'          88\n" + 
+	"88        8 8888         8 8888`8b       8 8888`8b      88 8888        ,8P 8 8888`8b              88\n" + 
+	"88        8 8888         8 8888 `8b.     8 8888 `8b.    `8 8888       ,8P  8 8888 `8b.            88\n" + 
+	"88        8 8888         8 8888   `8b.   8 8888   `8b.   ` 8888     ,88'   8 8888   `8b.          88\n" + 
+	"88        8 888888888888 8 8888     `88. 8 8888     `88.    `8888888P'     8 8888     `88.        88\n" +
+	"88                                                                                                88\n" +
+	"88                                                                                                88\n" +
+	"8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888\n\n";
+	
 	//declaring class constants
+	private static final String BUS_PANEL_ID = "normal";
+	private static final String ERR_PANEL_ID = "error";
 	private static final Font ASCII_FONT = new Font("Monospaced", Font.PLAIN, 8);
 	private static final Font DEFAULT_FONT = new Font("Monospaced", Font.PLAIN, 16);
 	private static final Color DEFAULT_BACKGROUND_COLOR = new Color(48, 10, 36);
@@ -43,9 +67,10 @@ public class FancyDisplay extends JFrame implements StopDisplay
 	private static final int PADDING = 15;
 	
 	//declaring local instance variables
-	private JPanel mainPanel, busPanel, errorPanel;
+	private JPanel displayCards;
 	private JTextArea log, errorMsg;
 	private DisplayCell[] cells;
+	private CardLayout cardManager;
 	private boolean printEmpty;
 	private int displayLines;
 	private boolean errorState;
@@ -69,13 +94,14 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		this.getContentPane().setLayout(new BorderLayout(0,0));
 		this.printEmpty = printEmpty;
 		this.displayLines = displayLines;
+		this.errorState = false;
 		
 		
 		//add padding
-		JPanel eastPad, westPad, northPad, southPad;
-		mainPanel = new JPanel();
-		mainPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
-		mainPanel.setLayout(new BorderLayout(20,20));
+		JPanel center, eastPad, westPad, northPad, southPad;
+		center = new JPanel();
+		center.setBackground(DEFAULT_BACKGROUND_COLOR);
+		center.setLayout(new BorderLayout(20,20));
 		eastPad = new JPanel();
 		eastPad.setBackground(DEFAULT_PADDING_COLOR);
 		eastPad.setPreferredSize(new Dimension(PADDING,0));
@@ -88,22 +114,41 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		southPad = new JPanel();
 		southPad.setPreferredSize(new Dimension(20,PADDING));
 		southPad.setBackground(DEFAULT_PADDING_COLOR);
-		this.getContentPane().add(mainPanel, BorderLayout.CENTER);
+		this.getContentPane().add(center, BorderLayout.CENTER);
 		this.getContentPane().add(northPad, BorderLayout.NORTH);
 		this.getContentPane().add(southPad, BorderLayout.SOUTH);
 		this.getContentPane().add(eastPad, BorderLayout.EAST);
 		this.getContentPane().add(westPad, BorderLayout.WEST);
 		
 		
-		//add aux panel and bus panel
-		JPanel auxPanel = new JPanel(new BorderLayout(0,0));
-		busPanel = new JPanel(new GridLayout(displayLines, 1, 0, 0));
-		auxPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
+		//add panel to contain main display
+		cardManager = new CardLayout(0, 0);
+		displayCards = new JPanel(cardManager);
+		displayCards.setBackground(DEFAULT_BACKGROUND_COLOR);
+		displayCards.setBorder(null);
+		center.add(displayCards, BorderLayout.CENTER);
+		
+		
+		//add panels for normal and erroneous operation
+		JPanel busPanel = new JPanel(new GridLayout(displayLines, 1, 0, 0));
 		busPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
 		busPanel.setBorder(null);
+		displayCards.add(busPanel, BUS_PANEL_ID);
+		
+		JPanel errorPanel = new JPanel(new BorderLayout(20,20)); 
+		errorPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
+		errorPanel.setBorder(null);
+		displayCards.add(errorPanel, ERR_PANEL_ID);
+		
+		cardManager.show(displayCards, BUS_PANEL_ID);
+		
+		
+		//add aux panel
+		JPanel auxPanel = new JPanel(new BorderLayout(0,0));
+		auxPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
 		auxPanel.setBorder(null);
-		mainPanel.add(auxPanel, BorderLayout.EAST);
-		mainPanel.add(busPanel, BorderLayout.CENTER);
+		center.add(auxPanel, BorderLayout.EAST);
+		
 		
 		
 		//add to aux panel
@@ -113,7 +158,7 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		header.setEditable(false);
 		header.setHighlighter(null);
 		header.setFont(ASCII_FONT);
-		header.setText(ASCII);
+		header.setText(ASCII_LOGO);
 		auxPanel.add(header, BorderLayout.NORTH);
 		
 		log = new JTextArea();
@@ -133,23 +178,23 @@ public class FancyDisplay extends JFrame implements StopDisplay
 			cells[i] = new DisplayCell();
 			busPanel.add(cells[i]);
 		}
-		
-		
-		//prep error panel
-		errorPanel = new JPanel(new BorderLayout(20,20)); 
-		errorPanel.setBackground(DEFAULT_BACKGROUND_COLOR);
-		errorPanel.setBorder(null);
+
 		
 		//add text/header to error panel
+		JPanel errP = new JPanel(new GridBagLayout());
+		errP.setBorder(null);
+		errP.setBackground(DEFAULT_BACKGROUND_COLOR);
+		errorPanel.add(errP, BorderLayout.NORTH);
+		
 		JTextArea errHeader = new JTextArea();
 		errHeader.setBackground(DEFAULT_BACKGROUND_COLOR);
 		errHeader.setForeground(DEFAULT_TEXT_COLOR);
 		errHeader.setEditable(false);
 		errHeader.setHighlighter(null);
 		errHeader.setFont(ASCII_FONT);
-		errHeader.setText(ASCII);
-		errorPanel.add(errHeader, BorderLayout.NORTH);
-		
+		errHeader.setText(ASCII_ERROR);
+		errP.add(errHeader);
+	
 		errorMsg = new JTextArea();
 		errorMsg.setBorder(null);
 		errorMsg.setBackground(DEFAULT_BACKGROUND_COLOR);
@@ -157,9 +202,9 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		errorMsg.setFont(DEFAULT_FONT);
 		errorMsg.setEditable(false);
 		errorMsg.setHighlighter(null);
+		errorMsg.setWrapStyleWord(true);
+		errorMsg.setLineWrap(true);
 		errorPanel.add(errorMsg, BorderLayout.CENTER);
-		
-		
 		
 		
 		//set visible
@@ -169,8 +214,6 @@ public class FancyDisplay extends JFrame implements StopDisplay
 			this.setUndecorated(true);
 		}
 		this.setVisible(true);
-		busPanel.setVisible(true);
-		errorPanel.setVisible(false);
 	}
 	
 	
@@ -188,9 +231,10 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		if (errorState)
 		{
 			errorState = false;
-			mainPanel.add(busPanel, BorderLayout.CENTER);
 			errorMsg.setText("");
+			cardManager.show(displayCards, BUS_PANEL_ID);
 		}
+		
 	}
 	
 	
@@ -201,11 +245,11 @@ public class FancyDisplay extends JFrame implements StopDisplay
 		if (!errorState)
 		{
 			errorState = true;
-			mainPanel.add(errorMsg, BorderLayout.CENTER);
+			cardManager.show(displayCards, ERR_PANEL_ID);
 		}
 		
 		//display message
-		
+		errorMsg.setText(msg);
 	}
 	
 	

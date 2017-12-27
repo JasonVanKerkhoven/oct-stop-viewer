@@ -41,7 +41,7 @@ public abstract class DisplayMain
 	//execution
 	public static void main(String[] args) 
 	{		
-		//declaring running flags
+		//declaring given parameters
 		boolean debug = false;
 		boolean printEmpty = false;
 		String configPath = "config/stops.cfg";
@@ -67,6 +67,7 @@ public abstract class DisplayMain
 		}
 		
 		//init variables
+		boolean error = false;
 		StopTimeFetcher fetcher = new StopTimeFetcher();
 		ConfigReader config = new ConfigReader(configPath);
 		StopDisplay display = new FancyDisplay(true, true, 6);
@@ -77,38 +78,42 @@ public abstract class DisplayMain
 			//fetch new information and update
 			try 
 			{
+				//get params from config file
 				display.setInfo("Updating...");
 				config.parse();
-				String s = "";
 				BusStop[] arr = new BusStop[config.getStops().length];
+				
+				//get and parse from OC Transpo servers
 				for (int i=0; i<config.getStops().length; i++)
 				{
 					arr[i] = fetcher.fetchAndParseAllStopTimes(config.getStops()[i]);
 				}
+				
+				//update display
 				display.setInfo("Idle");
 				display.updateStops(arr);
+				display.clearError();
 			}
 			
-			//handle errors
+			//handle possible errors
 			catch (ParseException e)
 			{
-				display.setInfo("JSON parsing error:\n" + e.getMessage());
+				display.setError("JSON parsing error:\n\n" + e.getMessage());
 			}
 			catch (IOException e)
 			{
-				display.setInfo(e.getMessage());
+				display.setError("Cannot connect to OC Transpo server:\n\n" + e.getMessage());
 			}
 			catch (ConfigException e) 
 			{
-				display.setInfo("Error in .cfg file:\n" + e.getMessage());
-				display.setError("hello");
+				display.setError("Error in .cfg file \"../" + config.getConfigFilePath() + "\":\n\n" + e.getMessage());
 			}
 			catch (OCTException e)
 			{
-				display.setInfo(e.getMessage());
+				display.setError("Error code detected in API response:\n\n" + e.getMessage());
 			}
 			
-			//sleep
+			//sleep for period
 			finally
 			{
 				try
