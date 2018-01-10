@@ -18,6 +18,7 @@ import javax.swing.JTextArea;
 import datatypes.BusStop;
 import datatypes.Route;
 import datatypes.Trip;
+import exceptions.StopDisplayException;
 
 import java.awt.GridLayout;
 
@@ -253,8 +254,8 @@ public class FancyDisplay extends JFrame implements StopDisplay
 	}
 	
 	
-	//set main output text
-	public void updateStops(BusStop[] stopArr)
+	//set main output, returns true if there has been an overflow
+	public void updateStops(BusStop[] stopArr) throws StopDisplayException
 	{
 		int i=0;
 		for (BusStop stop : stopArr)
@@ -271,7 +272,7 @@ public class FancyDisplay extends JFrame implements StopDisplay
 					String routeTitle, r;
 					if (route.routeNum == Route.OTRAIN)		r = "O-Train";
 					else									r = route.routeNum+"";
-					routeTitle = stopTitle + ": " + r + " " + route.direction;
+					routeTitle = stopTitle + ": " + r + " " + route.heading;
 					
 					if (route.isTripsScheduled())
 					{
@@ -310,20 +311,42 @@ public class FancyDisplay extends JFrame implements StopDisplay
 								etas += " (LAST TRIP)";
 							}
 						}
-						cells[i].setText(routeTitle, etas);
-						i++;
+						
+						if (i <cells.length)
+						{
+							cells[i].setText(routeTitle, etas);
+							i++;
+						}
+						else
+						{
+							throw new StopDisplayException("SLOT OVERFLOW:\nCannot display all bus trips");
+						}
 					}
 					else if (printEmpty)
 					{
-						cells[i].setText(routeTitle, "No trips avalible");
-						i++;
+						if (i < cells.length)
+						{
+							cells[i].setText(routeTitle, "No trips avalible");
+							i++;
+						}
+						else
+						{
+							throw new StopDisplayException("SLOT OVERFLOW:\nCannot display all bus trips");
+						}
 					}
 				}
 			}
 			else
 			{
-				cells[i].setText(stopTitle, "No routes avalible");
-				i++;
+				if (i < cells.length)
+				{
+					cells[i].setText(stopTitle, "No routes avalible");
+					i++;
+				}
+				else
+				{
+					throw new StopDisplayException("SLOT OVERFLOW:\nCannot display all bus trips");
+				}
 			}
 		}
 	}
