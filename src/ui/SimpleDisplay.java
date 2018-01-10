@@ -148,4 +148,12 @@ public class SimpleDisplay extends JFrame implements StopDisplay
 
 	@Override
 	public void setInfo(String txt) {}
+
+
+	@Override
+	public void clearError() {}
+
+
+	@Override
+	public void setError(String msg) {}
 }

@@ -29,6 +29,7 @@ import org.json.simple.parser.ParseException;
 import datatypes.BusStop;
 import exceptions.ConfigException;
 import exceptions.OCTException;
+import exceptions.StopDisplayException;
 import io.ConfigReader;
 import ui.FancyDisplay;
 import ui.SimpleDisplay;
@@ -94,7 +95,14 @@ public abstract class DisplayMain
 				
 				//update display
 				display.setInfo("Idle");
-				display.updateStops(arr);
+				try
+				{
+					display.updateStops(arr);
+				}
+				catch (StopDisplayException e)
+				{
+					display.setInfo(e.getMessage());
+				}
 				display.clearError();
 			}
 			
